@@ -12,8 +12,9 @@ endif
 export EXTERNAL_DYNAMIC_LIBRARIES += netcdff netcdf
 
 ifdef USE_VERNIER
-  export IGNORE_DEPENDENCIES += vernier_mod
+  export IGNORE_DEPENDENCIES += vernier_mod vernier_psy vernier_psy profile_psy_data_mod
   export EXTERNAL_DYNAMIC_LIBRARIES += vernier_f vernier_c vernier
+  export EXTERNAL_STATIC_LIBRARIES += vernier_psy
   $(info Linking Vernier)
 endif
 
