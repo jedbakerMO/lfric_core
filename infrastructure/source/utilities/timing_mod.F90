@@ -6,17 +6,22 @@
 !> @brief Provides wrapper support for profiler timings
 !>
 module timing_mod
-  use log_mod,            only:   log_event, log_scratch_space,     &
+  use log_mod,              only: log_event, log_scratch_space,     &
                                   LOG_LEVEL_DEBUG, LOG_LEVEL_WARNING
-  use constants_mod,      only:   i_def, imdi, cmdi, str_def
+  use constants_mod,        only: i_def, imdi, cmdi, str_def
 
 #ifdef VERNIER
-  use vernier_mod,        only:   vernier_init, vernier_start,      &
+  use vernier_mod,          only: vernier_init, vernier_start,      &
                                   vernier_stop, vernier_write,      &
                                   vernier_finalize, vik
 
+#ifdef PSYDATA_PROFILE
+  use profile_psy_data_mod, only: profile_PSyDataInit, &
+                                  profile_PSyDataShutdown
+#endif
+
 #elif defined( LEGACY_TIMER )
-  use timer_mod,          only: timer, init_timer, output_timer
+  use timer_mod,            only: timer, init_timer, output_timer
 
 #endif
 
@@ -93,7 +98,9 @@ contains
       call vernier_init( communicator%get_comm_mpi_val() )
       if ( LPROF ) call vernier_start( global_timing_handle, '__' // &
                                        application_name // '__' )
-
+#ifdef PSYDATA_PROFILE
+      call profile_PSyDataInit()
+#endif
     end if
 
 #endif
@@ -120,6 +127,9 @@ contains
 #ifdef TIMING_ON
 #ifdef VERNIER
     ! If Vernier is on then it will write to a file and then finalise
+#ifdef PSYDATA_PROFILE
+    call profile_PSyDataShutdown()
+#endif
     if ( LPROF ) call vernier_stop( global_timing_handle )
     call vernier_write()
     write(log_scratch_space, '(A)') 'Timing Mod: Vernier has written to file'
